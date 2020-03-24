@@ -3,42 +3,92 @@
 require 'faraday'
 require 'json'
 require 'omniauth'
+require 'pry'
 
 module OmniAuth
   module Strategies
     class Nusso
+      class AuthException < RuntimeError; end
+
       include OmniAuth::Strategy
 
-      def initialize(app, options = {}, &block)
-        super(app, { name: :nusso }.merge(options), &block)
-        @config = options
-      end
+      args [:base_url, :consumer_key]
+      option :base_url, nil
+      option :consumer_key, nil
+      option :sso_cookie, 'nusso'
+      option :include_attributes, true
+
+      ATTRIBUTE_MAP = {
+        name: 'displayName',
+        email: 'mail',
+        first_name: 'givenName',
+        last_name: 'sn',
+        phone: 'telephoneNumber',
+        description: 'title'
+      }.freeze
 
       def connection
-        @connection ||= Faraday::Connection.new(@config[:base_url])
+        @connection ||= Faraday::Connection.new(options.base_url)
       end
 
       protected
 
         def request_phase
-          session['omniauth.referer'] = request.referer
           response = get('get-ldap-redirect-url', goto: callback_url)
-          redirect response.redirecturl
+          redirect response['redirecturl']
         end
+
+        def callback_phase
+          token = request.cookies[options.sso_cookie]
+          response = get('validateWebSSOToken', webssotoken: token)
+          @user_info = { 'uid' => response['netid'] }
+          if options.include_attributes
+            @user_info.merge!(get_directory_attributes(token))
+          end
+          super
+        rescue AuthException => err
+          fail!(err.message)
+        end
+
+        uid { @user_info['uid'] }
+
+        info do
+          Hash[
+            ATTRIBUTE_MAP.map do |key, user_info_key|
+              [key, @user_info[user_info_key]]
+            end
+          ]
+        end
+
+        extra { { raw_info: @user_info } }
 
       private
 
         def get(path, headers)
-          headers = headers.merge(apikey: @config[:consumer_key])
+          headers = headers.merge(apikey: options.consumer_key)
           response = connection.get(path, nil, headers)
           case response.status
           when 200..299
             JSON.parse(response.body)
           when 407
-            raise "Login Failed. Missing, invalid, or expired SSO Token"
+            raise AuthException, "Missing or Invalid Token"
           else
-            raise "Unknown Response from #{path}"
+            raise AuthException, "Unknown Response"
           end
+        end
+
+        def get_directory_attributes(token)
+          response = get("validate-with-directory-search-response", webssotoken: token)
+          Hash[
+            response['results'].first.map do |k, v|
+              case v
+              when [] then nil
+              when "" then nil
+              when Array then [k, v.first]
+              else [k, v]
+              end
+            end.compact
+          ]
         end
     end
   end
