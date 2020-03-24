@@ -2,6 +2,25 @@
 
 require 'bundler/setup'
 require 'omniauth/nusso'
+require 'simplecov'
+require 'coveralls'
+
+ENV['RACK_ENV'] = 'test'
+ENV['RAILS_ENV'] = 'test'
+
+Coveralls.wear!
+
+SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
+  [
+    SimpleCov::Formatter::HTMLFormatter,
+    Coveralls::SimpleCov::Formatter
+  ]
+)
+
+SimpleCov.start do
+  add_filter 'spec'
+  add_filter 'vendor'
+end
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

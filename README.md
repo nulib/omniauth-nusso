@@ -3,6 +3,7 @@
 [OmniAuth](https://github.com/omniauth/omniauth) strategy for use with Northwestern University Agentless SSO.
 
 [![CircleCI](https://circleci.com/gh/nulib/omniauth-nusso.svg?style=svg)](https://circleci.com/gh/nulib/omniauth-nusso)
+[![Coverage Status](https://coveralls.io/repos/github/nulib/omniauth-nusso/badge.svg?branch=master)](https://coveralls.io/github/nulib/omniauth-nusso?branch=master)
 
 ## Installation
 
