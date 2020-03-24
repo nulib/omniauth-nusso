@@ -1,8 +1,8 @@
 # OmniAuth::Nusso
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/omniauth/nusso`. To experiment with that code, run `bin/console` for an interactive prompt.
+[OmniAuth](https://github.com/omniauth/omniauth) strategy for use with Northwestern University Agentless SSO.
 
-TODO: Delete this and the text above, and describe your gem
+[![CircleCI](https://circleci.com/gh/nulib/omniauth-nusso.svg?style=svg)](https://circleci.com/gh/nulib/omniauth-nusso)
 
 ## Installation
 
@@ -22,7 +22,7 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+TODO
 
 ## Development
 
@@ -32,5 +32,5 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/omniauth-nusso.
+Bug reports and pull requests are welcome on GitHub at https://github.com/nulib/omniauth-nusso.
 
