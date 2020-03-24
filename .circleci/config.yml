@@ -1,0 +1,29 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.6.5
+        environment:
+          BUNDLER_VERSION: 2.1.4
+    steps:
+      - checkout
+      - run:
+          name: Install Bundler 2.1.4
+          command: gem install --no-doc bundler:2.1.4
+      - restore_cache:
+          keys:
+            - bundle-{{ checksum "Gemfile" }}-{{ checksum "omniauth-nusso.gemspec" }}
+            - bundle- # used if checksum fails
+      - run:
+          name: Install dependencies
+          command: bundle check --path=vendor/bundle || bundle install --path=vendor/bundle --jobs 4 --retry 3
+      - save_cache:
+          key: bundle-{{ checksum "Gemfile" }}-{{ checksum "omniauth-nusso.gemspec" }}
+          paths:
+            - "vendor/bundle"
+      - run:
+          name: Run Rubocop
+          command: bundle exec rubocop
+      - run:
+          name: Run Specs
+          command: bundle exec rspec spec
