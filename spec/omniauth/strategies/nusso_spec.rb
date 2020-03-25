@@ -94,6 +94,7 @@ __EOC__
 
       it 'contains user info' do
         expect(last_request.env['omniauth.auth']['uid']).to eq('abc123')
+        expect(last_request.env['omniauth.auth']['info']['name']).to eq('Archie B. Charles')
         expect(last_request.env['omniauth.auth']['info']['email']).to eq('archie.charles@example.edu')
       end
     end
@@ -138,6 +139,37 @@ __EOC__
         expect(last_response).to be_redirect
         expect(last_response.headers['Location']).to match(%r{^/auth/failure?.*message=Unknown Response})
       end
+    end
+  end
+
+  context 'no directory entry' do
+    before do
+      stub_request(:get, 'https://test.example.edu/agentless-websso/validateWebSSOToken')
+      .with(
+        headers: {
+          'Apikey' => 'test-consumer-key',
+          'Webssotoken' => 'success-token'
+        }
+      )
+      .to_return(body: %({"netid": "#{netid}"}))
+
+      stub_request(:get, 'https://test.example.edu/agentless-websso/validate-with-directory-search-response')
+      .with(
+        headers: {
+          'Apikey' => 'test-consumer-key',
+          'Webssotoken' => 'success-token'
+        }
+      )
+      .to_return(status: 500, body: '{"fault":{"faultstring":"Execution of ServiceCallout Call-Directory-Search failed. Reason: ResponseCode 404 is treated as error","detail":{"errorcode":"steps.servicecallout.ExecutionFailed"}}}')
+
+      set_cookie('nusso=success-token')
+      get '/auth/nusso/callback'
+    end
+
+    it 'contains computed user info' do
+      expect(last_request.env['omniauth.auth']['uid']).to eq('abc123')
+      expect(last_request.env['omniauth.auth']['info']['name']).to eq('abc123')
+      expect(last_request.env['omniauth.auth']['info']['email']).to eq('abc123@e.northwestern.edu')
     end
   end
 end

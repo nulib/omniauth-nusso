@@ -17,6 +17,7 @@ module OmniAuth
       option :consumer_key, nil
       option :sso_cookie, 'nusso'
       option :include_attributes, true
+      option :netid_email_domain, 'e.northwestern.edu'
 
       ATTRIBUTE_MAP = {
         name: 'displayName',
@@ -43,7 +44,7 @@ module OmniAuth
           response = get('validateWebSSOToken', webssotoken: token)
           @user_info = { 'uid' => response['netid'] }
           if options.include_attributes
-            @user_info.merge!(get_directory_attributes(token))
+            @user_info.merge!(get_directory_attributes(token, response['netid']))
           end
           super
         rescue AuthException => err
@@ -77,7 +78,16 @@ module OmniAuth
           end
         end
 
-        def get_directory_attributes(token)
+        def netid_user(net_id)
+          {
+            'displayName' => net_id,
+            'givenName' => net_id,
+            'sn' => '(NetID)',
+            'mail' => "#{net_id}@#{options.netid_email_domain}"
+          }
+        end
+
+        def get_directory_attributes(token, net_id)
           response = get("validate-with-directory-search-response", webssotoken: token)
           Hash[
             response['results'].first.map do |k, v|
@@ -89,6 +99,8 @@ module OmniAuth
               end
             end.compact
           ]
+        rescue AuthException
+          netid_user(net_id)
         end
     end
   end
