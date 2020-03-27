@@ -3,7 +3,6 @@
 require 'faraday'
 require 'json'
 require 'omniauth'
-require 'pry'
 
 module OmniAuth
   module Strategies
