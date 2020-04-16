@@ -172,4 +172,35 @@ __EOC__
       expect(last_request.env['omniauth.auth']['info']['email']).to eq('abc123@e.northwestern.edu')
     end
   end
+
+  context 'blank directory entry' do
+    before do
+      stub_request(:get, 'https://test.example.edu/agentless-websso/validateWebSSOToken')
+      .with(
+        headers: {
+          'Apikey' => 'test-consumer-key',
+          'Webssotoken' => 'success-token'
+        }
+      )
+      .to_return(body: %({"netid": "#{netid}"}))
+
+      stub_request(:get, 'https://test.example.edu/agentless-websso/validate-with-directory-search-response')
+      .with(
+        headers: {
+          'Apikey' => 'test-consumer-key',
+          'Webssotoken' => 'success-token'
+        }
+      )
+      .to_return(status: 200, body: '')
+
+      set_cookie('nusso=success-token')
+      get '/auth/nusso/callback'
+    end
+
+    it 'contains computed user info' do
+      expect(last_request.env['omniauth.auth']['uid']).to eq('abc123')
+      expect(last_request.env['omniauth.auth']['info']['name']).to eq('abc123')
+      expect(last_request.env['omniauth.auth']['info']['email']).to eq('abc123@e.northwestern.edu')
+    end
+  end
 end

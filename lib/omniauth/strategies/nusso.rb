@@ -98,7 +98,7 @@ module OmniAuth
               end
             end.compact
           ]
-        rescue AuthException
+        rescue AuthException, JSON::ParserError
           netid_user(net_id)
         end
     end
