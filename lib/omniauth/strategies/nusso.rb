@@ -88,7 +88,7 @@ module OmniAuth
 
         def get_directory_attributes(token, net_id)
           response = get("validate-with-directory-search-response", webssotoken: token)
-          Hash[
+          entry = Hash[
             response['results'].first.map do |k, v|
               case v
               when [] then nil
@@ -98,6 +98,7 @@ module OmniAuth
               end
             end.compact
           ]
+          netid_user(net_id).merge(entry)
         rescue AuthException, JSON::ParserError
           netid_user(net_id)
         end
