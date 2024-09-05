@@ -47,14 +47,12 @@ __EOC__
   end
 
   def app
-    Rack::Builder.new do
-      use OmniAuth::Test::PhonySession
-      use OmniAuth::Builder do
-        provider OmniAuth::Strategies::Nusso,
-                 'https://test.example.edu/agentless-websso/',
-                 'test-consumer-key'
-      end
-      run ->(env) { [404, { "Content-Type" => "text/plain" }, [env.key?("omniauth.auth").to_s]] }
+    Rack::Builder.new do |builder|
+      builder.use OmniAuth::Test::PhonySession
+      builder.use OmniAuth::Strategies::Nusso,
+        'https://test.example.edu/agentless-websso/',
+        'test-consumer-key'
+      builder.run ->(env) { [404, { "Content-Type" => "text/plain" }, [env.key?("omniauth.auth").to_s]] }
     end.to_app
   end
 
@@ -98,11 +96,10 @@ __EOC__
           )
           .to_return(body: %({"netid": "#{netid}"}))
 
-        stub_request(:get, 'https://test.example.edu/agentless-websso/validate-with-directory-search-response')
+        stub_request(:get, "https://test.example.edu/directory-search/res/netid/bas/#{netid}")
           .with(
             headers: {
-              'Apikey' => 'test-consumer-key',
-              'Webssotoken' => 'success-token'
+              'Apikey' => 'test-consumer-key'
             }
           )
           .to_return(body: user_info)
@@ -172,11 +169,10 @@ __EOC__
       )
       .to_return(body: %({"netid": "#{netid}"}))
 
-      stub_request(:get, 'https://test.example.edu/agentless-websso/validate-with-directory-search-response')
+      stub_request(:get, "https://test.example.edu/directory-search/res/netid/bas/#{netid}")
       .with(
         headers: {
-          'Apikey' => 'test-consumer-key',
-          'Webssotoken' => 'success-token'
+          'Apikey' => 'test-consumer-key'
         }
       )
       .to_return(status: 500, body: '{"fault":{"faultstring":"Execution of ServiceCallout Call-Directory-Search failed. Reason: ResponseCode 404 is treated as error","detail":{"errorcode":"steps.servicecallout.ExecutionFailed"}}}')
@@ -203,11 +199,10 @@ __EOC__
       )
       .to_return(body: %({"netid": "#{netid}"}))
 
-      stub_request(:get, 'https://test.example.edu/agentless-websso/validate-with-directory-search-response')
+      stub_request(:get, "https://test.example.edu/directory-search/res/netid/bas/#{netid}")
       .with(
         headers: {
-          'Apikey' => 'test-consumer-key',
-          'Webssotoken' => 'success-token'
+          'Apikey' => 'test-consumer-key'
         }
       )
       .to_return(status: 200, body: '')
@@ -234,11 +229,10 @@ __EOC__
         )
         .to_return(body: %({"netid": "#{netid}"}))
 
-      stub_request(:get, 'https://test.example.edu/agentless-websso/validate-with-directory-search-response')
+      stub_request(:get, "https://test.example.edu/directory-search/res/netid/bas/#{netid}")
         .with(
           headers: {
-            'Apikey' => 'test-consumer-key',
-            'Webssotoken' => 'success-token'
+            'Apikey' => 'test-consumer-key'
           }
         )
         .to_return(body: empty_user_info)

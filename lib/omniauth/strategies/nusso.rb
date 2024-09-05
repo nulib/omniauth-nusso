@@ -34,13 +34,13 @@ module OmniAuth
       protected
 
         def request_phase
-          response = get('get-ldap-redirect-url', goto: callback_url)
+          response = get('/agentless-websso/get-ldap-redirect-url', goto: callback_url)
           redirect response['redirecturl']
         end
 
         def callback_phase
           token = request.cookies[options.sso_cookie]
-          response = get('validateWebSSOToken', webssotoken: token)
+          response = get('/agentless-websso/validateWebSSOToken', webssotoken: token)
           @user_info = { 'uid' => response['netid'] }
           if options.include_attributes
             @user_info.merge!(get_directory_attributes(token, response['netid']))
@@ -64,7 +64,7 @@ module OmniAuth
 
       private
 
-        def get(path, headers)
+        def get(path, headers = {})
           headers = headers.merge(apikey: options.consumer_key)
           response = connection.get(path, nil, headers)
           case response.status
@@ -87,7 +87,7 @@ module OmniAuth
         end
 
         def get_directory_attributes(token, net_id)
-          response = get("validate-with-directory-search-response", webssotoken: token)
+          response = get("/directory-search/res/netid/bas/#{net_id}")
           entry = Hash[
             response['results'].first.map do |k, v|
               case v

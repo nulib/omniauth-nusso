@@ -16,15 +16,14 @@ SimpleCov.formatter = SimpleCov::Formatter::MultiFormatter.new(
   ]
 )
 
-SimpleCov.start do
-  add_filter 'spec'
-  add_filter 'vendor'
-end
 
 require 'omniauth/nusso'
 
 OmniAuth.configure do |config|
   config.logger = Logger.new(IO::NULL)
+  config.test_mode = true
+  config.allowed_request_methods = %i[get post]
+  config.request_validation_phase = nil
 end
 
 RSpec.configure do |config|
